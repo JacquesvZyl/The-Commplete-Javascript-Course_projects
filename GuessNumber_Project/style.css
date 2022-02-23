@@ -1,0 +1,110 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+html {
+  box-sizing: border-box;
+  font-size: 62.5%;
+}
+
+body {
+  font-family: "Press Start 2P", cursive;
+  background-color: #201f20;
+  color: white;
+  font-size: 1.8rem;
+}
+
+.main-container {
+  max-width: 100%;
+  padding: 30px 50px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn {
+  border: none;
+  color: black;
+  background-color: white;
+  font-size: 2rem;
+  font-family: "Press Start 2P", cursive;
+  width: 150px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  transform: scale(0.9);
+}
+
+.guess-section {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.answer-container {
+  margin-top: 30px;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  position: relative;
+}
+
+.answer-container p {
+  font-size: 6rem;
+  color: #201f20;
+}
+
+.answer-container .line {
+  position: absolute;
+  width: 100vw;
+  height: 6px;
+  background-color: white;
+  z-index: -1;
+}
+
+.answer-section {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+}
+
+.answer-section {
+  max-width: 1200px;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  gap: 6rem;
+  margin-top: 100px;
+}
+.answer-section .answer input {
+  height: 100px;
+  width: 250px;
+  border: 3px solid white;
+  background-color: transparent;
+  color: white;
+  font-size: 4rem;
+  font-family: "Press Start 2P", cursive;
+  text-align: center;
+}
+
+.answer-section .answer button {
+  height: 60px;
+}
+
+.answer-section .scores h2 {
+  margin-bottom: 60px;
+}
