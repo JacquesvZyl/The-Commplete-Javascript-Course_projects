@@ -14,6 +14,7 @@ const tabs = document.querySelectorAll('.operations__tab');
 const tabsContainer = document.querySelector('.operations__tab-container');
 const tabsContent = document.querySelectorAll('.operations__content');
 const header = document.querySelector('.header');
+const lazyImages = document.querySelectorAll('img[data-src]');
 
 const openModal = function (e) {
   e.preventDefault();
@@ -175,7 +176,6 @@ allSections.forEach(section => {
 });
 
 // Lazy loading images
-
 function loadLazyImg(entries, observer) {
   const [entry] = entries;
   if (!entry.isIntersecting) return;
@@ -185,7 +185,6 @@ function loadLazyImg(entries, observer) {
   });
   observer.unobserve(entry.target);
 }
-const lazyImages = document.querySelectorAll('img[data-src]');
 
 const lazyImgObserver = new IntersectionObserver(loadLazyImg, {
   root: null,
