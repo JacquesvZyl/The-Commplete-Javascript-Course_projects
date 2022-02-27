@@ -50,21 +50,7 @@ document.addEventListener('keydown', function (e) {
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 
-const message = document.createElement('div');
-message.classList.add('cookie-message');
-//message.innerText = "We use cookies for imporved functionality and analytics."
-message.innerHTML =
-  'We use cookies for imporved functionality and analytics. <button class="btn btn--close-cookie">Got it!</button>';
-
-document.querySelector('.header').append(message);
-
-document.querySelector('.btn--close-cookie').addEventListener('click', () => {
-  message.remove();
-});
-
 // Styles
-message.style.backgroundColor = '#37383d';
-message.style.height = `${parseFloat(getComputedStyle(message).height) + 40}px`;
 
 btnScrollTo.addEventListener('click', e => {
   section1.scrollIntoView({ behavior: 'smooth' });
@@ -96,24 +82,6 @@ function removeClass(elementClassname, classNameToRemove) {
     .querySelectorAll(`.${elementClassname}`)
     .forEach(el => el.classList.remove(classNameToRemove));
 }
-
-/* function returnElement(index, elementClassname) {
-  return [...document.querySelectorAll(`.${elementClassname}`)][index - 1];
-} */
-/* document.addEventListener('click', e => {
-  if (e.target.closest('.operations__tab')) {
-    const btn = e.target.closest('.operations__tab');
-    const blurb = returnElement(
-      btn.getAttribute('data-tab'),
-      'operations__content'
-    );
-    removeClass('operations__tab', 'operations__tab--active');
-    removeClass('operations__content', 'operations__content--active');
-    btn.classList.add('operations__tab--active');
-    blurb.classList.add('operations__content--active');
-  }
-});
- */
 
 //// TABBED COMPONENT - JONAS SOLUTOIN ////
 
