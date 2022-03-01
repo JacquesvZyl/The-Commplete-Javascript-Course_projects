@@ -76,6 +76,11 @@ class App {
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
+    containerWorkouts.addEventListener('click', this._deleteWorkout.bind(this));
+    //prettier-ignore
+    containerWorkouts.addEventListener('mouseover',this._toggleWorkoutButtons.bind(this));
+    //prettier-ignore
+    containerWorkouts.addEventListener('mouseout', this._toggleWorkoutButtons.bind(this));
   }
   _getPosition() {
     if (navigator.geolocation)
@@ -104,6 +109,12 @@ class App {
 
     this.#map.on('click', this._showForm.bind(this));
   }
+  _toggleWorkoutButtons(e) {
+    const workout = e.target.closest('.workout');
+    if (!workout) return;
+    workout.querySelector('.workout__buttons').classList.toggle('hidden');
+  }
+
   _showForm(e) {
     this.#mapEvent = e;
     form.classList.remove('hidden');
@@ -195,7 +206,11 @@ class App {
     let html = `<li class="workout workout--${workout.type}" data-id="${
       workout.id
     }">
+    <div class="workout__buttons hidden">
+    <button class='delete'>Delete</button>
+  </div>
     <h2 class="workout__title">${workout.description}</h2>
+
     <div class="workout__details">
       <span class="workout__icon">${
         workout.type == 'running' ? '🏃' : '🚴'
@@ -219,6 +234,9 @@ class App {
     <span class="workout__value">${workout.cadence}</span>
     <span class="workout__unit">spm</span>
   </div>
+  <div class="workout__buttons">
+  
+  </div>
 </li>`;
     }
 
@@ -233,15 +251,47 @@ class App {
   <span class="workout__value">${workout.elevation}</span>
   <span class="workout__unit">m</span>
 </div>
+
 </li>`;
     }
 
     form.insertAdjacentHTML('afterend', html);
   }
 
+  _deleteWorkout(e) {
+    function deleteWorkoutHtml() {
+      //prettier-ignore
+      document.querySelectorAll('.workout').forEach(workout => workout.remove());
+      //prettier-ignore
+      document.querySelectorAll('.leaflet-popup').forEach(popup => popup.remove())
+    }
+
+    const deleteBtn = e.target;
+    if (!deleteBtn.classList.contains('delete')) return;
+    const id = deleteBtn.closest('.workout').dataset.id;
+    deleteWorkoutHtml();
+    const currentWorkout = this.#workouts.find(workout => workout.id === id);
+
+    this.#map.eachLayer(layer => {
+      //prettier-ignore
+      if (layer.options && layer.options.pane === 'markerPane' && layer._latlng.lat === currentWorkout.coords[0] && layer._latlng.lng === currentWorkout.coords[1]) 
+      {
+        this.#map.removeLayer(layer);
+      }
+    });
+
+    this.#workouts = this.#workouts.filter(workout => workout.id !== id);
+    this.#workouts.forEach(workout => {
+      this._renderWorkout(workout);
+      this._renderWorkoutMarker(workout);
+    });
+    localStorage.removeItem('workouts');
+    this._setLocalStorage();
+  }
+
   _moveToPopup(e) {
     const workoutEl = e.target.closest('.workout');
-    if (!workoutEl) return;
+    if (!workoutEl || e.target.closest('.workout__buttons')) return;
     const workout = this.#workouts.find(
       work => work.id === workoutEl.dataset.id
     );
