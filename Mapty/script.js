@@ -2,6 +2,7 @@
 
 // prettier-ignore
 const form = document.querySelector('.form');
+const sort = document.querySelector('.sort');
 const containerWorkouts = document.querySelector('.workouts');
 const inputType = document.querySelector('.form__input--type');
 const inputDistance = document.querySelector('.form__input--distance');
@@ -66,6 +67,7 @@ class App {
   #mapZoomLevel = 13;
   #mapEvent;
   #workouts = [];
+  #sort = false;
   constructor() {
     // get data from local storage
     this._getLocalStorage();
@@ -77,6 +79,7 @@ class App {
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
     containerWorkouts.addEventListener('click', this._deleteWorkout.bind(this));
+    containerWorkouts.addEventListener('click', this._sortWorkout.bind(this));
     //prettier-ignore
     containerWorkouts.addEventListener('mouseover',this._toggleWorkoutButtons.bind(this));
     //prettier-ignore
@@ -118,6 +121,7 @@ class App {
   _showForm(e) {
     this.#mapEvent = e;
     form.classList.remove('hidden');
+    sort.classList.add('hidden');
     inputDistance.focus();
   }
   _hideForm() {
@@ -128,6 +132,7 @@ class App {
         '';
     form.style.display = 'none';
     form.classList.add('hidden');
+    sort.classList.remove('hidden');
     setTimeout(() => (form.style.display = 'grid'), 500);
   }
   _toggleElevationField() {
@@ -207,7 +212,7 @@ class App {
       workout.id
     }">
     <div class="workout__buttons hidden">
-    <button class='delete'>Delete</button>
+    <span class='delete'>Delete</span>
   </div>
     <h2 class="workout__title">${workout.description}</h2>
 
@@ -287,6 +292,29 @@ class App {
     });
     localStorage.removeItem('workouts');
     this._setLocalStorage();
+  }
+
+  _sortWorkout(e) {
+    const sortBtn = e.target;
+    if (!sortBtn.classList.contains('sort')) return;
+    this.#sort = !this.#sort;
+    console.log(this.#sort);
+    document.querySelectorAll('.workout').forEach(workout => workout.remove());
+    sort.textContent = this.#sort ? 'Sort by Latest' : 'Sort by Distance';
+    const sortedWorkout = this.#sort
+      ? this.#workouts.slice().sort((a, b) => a.distance - b.distance)
+      : this.#workouts;
+    sortedWorkout.forEach(workout => this._renderWorkout(workout));
+
+    /* 
+    function sortMovements(movs, dates, sort) {
+  const combined = movs.map((mov, i) => {
+    return [mov, dates[i]];
+  });
+  const finalMovs = sort ? combined.sort((a, b) => a[0] - b[0]) : combined;
+  return finalMovs;
+}
+    */
   }
 
   _moveToPopup(e) {
