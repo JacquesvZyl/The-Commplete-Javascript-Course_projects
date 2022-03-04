@@ -107,7 +107,6 @@ class App {
       return data;
     } catch (e) {
       alert(e.message);
-
       // Reject promise returned from async func
       throw e;
     }
@@ -158,7 +157,7 @@ class App {
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
-  async _newWorkout(e) {
+  _newWorkout(e) {
     function validInputs(...inputs) {
       return inputs.every(inp => Number.isFinite(inp));
     }
@@ -173,49 +172,51 @@ class App {
     const { lat, lng } = this.#mapEvent.latlng;
     console.log(this.#mapEvent);
     let workout;
+    let temp;
 
-    this._getWeather(lat, lng)
-      .then(data => {
-        const { temp } = data.main;
-        if (type === 'running') {
-          const cadence = Number(inputCadence.value);
+    (async function () {
+      try {
+        const data = await this._getWeather(lat, lng);
+        ({ temp } = data.main);
+        console.log(temp);
+      } catch (e) {
+        console.error(e.message);
+      }
+      if (type === 'running') {
+        const cadence = Number(inputCadence.value);
 
-          if (
-            !validInputs(distance, duration, cadence) ||
-            !allPositive(distance, duration, cadence)
-          ) {
-            return alert('Inputs have to be positive numbers');
-          }
-
-          //prettier-ignore
-          workout = new Running([lat, lng],distance,duration,cadence,temp);
+        if (
+          !validInputs(distance, duration, cadence) ||
+          !allPositive(distance, duration, cadence)
+        ) {
+          return alert('Inputs have to be positive numbers');
         }
 
-        if (type === 'cycling') {
-          const elevation = Number(inputElevation.value);
-          if (
-            !validInputs(distance, duration, elevation) ||
-            !allPositive(distance, duration)
-          ) {
-            return alert('Inputs have to be positive numbers');
-          }
+        //prettier-ignore
+        workout = new Running([lat, lng],distance,duration,cadence,temp);
+      }
 
-          //prettier-ignore
-          workout = new Cycling([lat, lng],distance,duration,elevation,temp);
+      if (type === 'cycling') {
+        const elevation = Number(inputElevation.value);
+        if (
+          !validInputs(distance, duration, elevation) ||
+          !allPositive(distance, duration)
+        ) {
+          return alert('Inputs have to be positive numbers');
         }
-      })
 
-      .finally(() => {
-        this.#workouts.push(workout);
-        this._renderWorkoutMarker(workout);
-        this._renderWorkout(workout);
-        console.log(this.#workouts);
+        //prettier-ignore
+        workout = new Cycling([lat, lng],distance,duration,elevation,temp);
+      }
+      this.#workouts.push(workout);
+      this._renderWorkoutMarker(workout);
+      this._renderWorkout(workout);
+      console.log(this.#workouts);
 
-        // Set local storage
-        this._setLocalStorage();
-        this._hideForm();
-      })
-      .catch(e => alert(e.message));
+      // Set local storage
+      this._setLocalStorage();
+      this._hideForm();
+    }.bind(this)());
   }
 
   _renderWorkoutMarker(workout) {
@@ -240,11 +241,18 @@ class App {
     let html = `<li class="workout workout--${workout.type}" data-id="${
       workout.id
     }">
+    <div class="workout__top">
     <div class="workout__buttons hidden">
     <span class='delete'>Delete</span>
-    <span>${workout.temp}</span>
-  </div>
+    </div>
+    <div class="temp_container">
+    <h3>Temp:</h3>
+    <span>${workout.temp}°C</span>
+    </div>
+    
+    </div>
     <h2 class="workout__title">${workout.description}</h2>
+    
 
     <div class="workout__details">
       <span class="workout__icon">${
