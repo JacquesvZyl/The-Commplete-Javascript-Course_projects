@@ -14,14 +14,15 @@ class Workout {
   date = new Date();
   id = String(Date.now()).slice(-10);
   clicks = 0;
-  constructor(coords, distance, duration) {
+  constructor(coords, distance, duration, temp) {
     this.coords = coords; // [lat,long]
     this.distance = distance; //in km
     this.duration = duration; //in min
+    this.temp = temp;
   }
   _setDescription() {
     //prettier-ignore
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
       months[this.date.getMonth()]
     } ${this.date.getDate()}`;
@@ -34,8 +35,8 @@ class Workout {
 
 class Running extends Workout {
   type = 'running';
-  constructor(coords, distance, duration, cadence) {
-    super(coords, distance, duration);
+  constructor(coords, distance, duration, cadence, temp) {
+    super(coords, distance, duration, temp);
     this.cadence = cadence;
     this.calcPace();
     this._setDescription();
@@ -49,8 +50,8 @@ class Running extends Workout {
 
 class Cycling extends Workout {
   type = 'cycling';
-  constructor(coords, distance, duration, elevation) {
-    super(coords, distance, duration);
+  constructor(coords, distance, duration, elevation, temp) {
+    super(coords, distance, duration, temp);
     this.elevation = elevation;
     this.calcSpeed();
     this._setDescription();
@@ -93,6 +94,23 @@ class App {
           alert('Could not get current position');
         }
       );
+  }
+
+  async _getWeather(lat, lon) {
+    try {
+      console.log(lat, lon);
+      const url = `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=b6ba67cfc386c27233294b33908d06fc`;
+      const result = await fetch(url);
+      if (!result.ok)
+        throw new Error(`${result.status}: unable to fetch api data ${url}`);
+      const data = await result.json();
+      return data;
+    } catch (e) {
+      alert(e.message);
+
+      // Reject promise returned from async func
+      throw e;
+    }
   }
   _loadMap(position) {
     console.log(position);
@@ -140,7 +158,7 @@ class App {
     inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
     inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
   }
-  _newWorkout(e) {
+  async _newWorkout(e) {
     function validInputs(...inputs) {
       return inputs.every(inp => Number.isFinite(inp));
     }
@@ -153,40 +171,51 @@ class App {
     const distance = Number(inputDistance.value);
     const duration = Number(inputDuration.value);
     const { lat, lng } = this.#mapEvent.latlng;
+    console.log(this.#mapEvent);
     let workout;
 
-    if (type === 'running') {
-      const cadence = Number(inputCadence.value);
+    this._getWeather(lat, lng)
+      .then(data => {
+        const { temp } = data.main;
+        if (type === 'running') {
+          const cadence = Number(inputCadence.value);
 
-      if (
-        !validInputs(distance, duration, cadence) ||
-        !allPositive(distance, duration, cadence)
-      ) {
-        return alert('Inputs have to be positive numbers');
-      }
+          if (
+            !validInputs(distance, duration, cadence) ||
+            !allPositive(distance, duration, cadence)
+          ) {
+            return alert('Inputs have to be positive numbers');
+          }
 
-      workout = new Running([lat, lng], distance, duration, cadence);
-    }
+          //prettier-ignore
+          workout = new Running([lat, lng],distance,duration,cadence,temp);
+        }
 
-    if (type === 'cycling') {
-      const elevation = Number(inputElevation.value);
-      if (
-        !validInputs(distance, duration, elevation) ||
-        !allPositive(distance, duration)
-      ) {
-        return alert('Inputs have to be positive numbers');
-      }
+        if (type === 'cycling') {
+          const elevation = Number(inputElevation.value);
+          if (
+            !validInputs(distance, duration, elevation) ||
+            !allPositive(distance, duration)
+          ) {
+            return alert('Inputs have to be positive numbers');
+          }
 
-      workout = new Cycling([lat, lng], distance, duration, elevation);
-    }
+          //prettier-ignore
+          workout = new Cycling([lat, lng],distance,duration,elevation,temp);
+        }
+      })
 
-    this.#workouts.push(workout);
-    this._renderWorkoutMarker(workout);
-    this._renderWorkout(workout);
-    this._hideForm();
+      .finally(() => {
+        this.#workouts.push(workout);
+        this._renderWorkoutMarker(workout);
+        this._renderWorkout(workout);
+        console.log(this.#workouts);
 
-    // Set local storage
-    this._setLocalStorage();
+        // Set local storage
+        this._setLocalStorage();
+        this._hideForm();
+      })
+      .catch(e => alert(e.message));
   }
 
   _renderWorkoutMarker(workout) {
@@ -213,6 +242,7 @@ class App {
     }">
     <div class="workout__buttons hidden">
     <span class='delete'>Delete</span>
+    <span>${workout.temp}</span>
   </div>
     <h2 class="workout__title">${workout.description}</h2>
 
