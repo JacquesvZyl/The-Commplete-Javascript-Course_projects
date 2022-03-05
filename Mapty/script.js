@@ -14,11 +14,12 @@ class Workout {
   date = new Date();
   id = String(Date.now()).slice(-10);
   clicks = 0;
-  constructor(coords, distance, duration, temp) {
+  constructor(coords, distance, duration, temp, weatherIcon) {
     this.coords = coords; // [lat,long]
     this.distance = distance; //in km
     this.duration = duration; //in min
     this.temp = temp;
+    this.weatherIcon = weatherIcon;
   }
   _setDescription() {
     //prettier-ignore
@@ -35,8 +36,8 @@ class Workout {
 
 class Running extends Workout {
   type = 'running';
-  constructor(coords, distance, duration, cadence, temp) {
-    super(coords, distance, duration, temp);
+  constructor(coords, distance, duration, cadence, temp, weatherIcon) {
+    super(coords, distance, duration, temp, weatherIcon);
     this.cadence = cadence;
     this.calcPace();
     this._setDescription();
@@ -50,8 +51,8 @@ class Running extends Workout {
 
 class Cycling extends Workout {
   type = 'cycling';
-  constructor(coords, distance, duration, elevation, temp) {
-    super(coords, distance, duration, temp);
+  constructor(coords, distance, duration, elevation, temp, weatherIcon) {
+    super(coords, distance, duration, temp, weatherIcon);
     this.elevation = elevation;
     this.calcSpeed();
     this._setDescription();
@@ -81,6 +82,10 @@ class App {
     containerWorkouts.addEventListener('click', this._moveToPopup.bind(this));
     containerWorkouts.addEventListener('click', this._deleteWorkout.bind(this));
     containerWorkouts.addEventListener('click', this._sortWorkout.bind(this));
+    containerWorkouts.addEventListener('click', e => {
+      if (!e.target.classList.contains('form__close')) return;
+      this._hideForm();
+    });
     //prettier-ignore
     containerWorkouts.addEventListener('mouseover',this._toggleWorkoutButtons.bind(this));
     //prettier-ignore
@@ -104,6 +109,7 @@ class App {
       if (!result.ok)
         throw new Error(`${result.status}: unable to fetch api data ${url}`);
       const data = await result.json();
+
       return data;
     } catch (e) {
       alert(e.message);
@@ -173,12 +179,13 @@ class App {
     console.log(this.#mapEvent);
     let workout;
     let temp;
+    let weatherIcon;
 
     (async function () {
       try {
         const data = await this._getWeather(lat, lng);
-        ({ temp } = data.main);
-        console.log(temp);
+        temp = data.main.temp;
+        weatherIcon = data.weather[0].icon;
       } catch (e) {
         console.error(e.message);
       }
@@ -193,7 +200,7 @@ class App {
         }
 
         //prettier-ignore
-        workout = new Running([lat, lng],distance,duration,cadence,temp);
+        workout = new Running([lat, lng],distance,duration,cadence,temp,weatherIcon);
       }
 
       if (type === 'cycling') {
@@ -206,7 +213,7 @@ class App {
         }
 
         //prettier-ignore
-        workout = new Cycling([lat, lng],distance,duration,elevation,temp);
+        workout = new Cycling([lat, lng],distance,duration,elevation,temp,weatherIcon);
       }
       this.#workouts.push(workout);
       this._renderWorkoutMarker(workout);
@@ -238,6 +245,7 @@ class App {
   }
 
   _renderWorkout(workout) {
+    //prettier-ignore
     let html = `<li class="workout workout--${workout.type}" data-id="${
       workout.id
     }">
@@ -245,14 +253,19 @@ class App {
     <div class="workout__buttons hidden">
     <span class='delete'>Delete</span>
     </div>
-    <div class="temp_container">
-    <h3>Temp:</h3>
-    <span>${workout.temp}°C</span>
     </div>
-    
-    </div>
+
+    <div class="workout__title__container">
     <h2 class="workout__title">${workout.description}</h2>
+    <div class="temp_container">
+    <span>${workout.temp}°C</span>
+    <img id="wicon" src="http://openweathermap.org/img/wn/${workout.weatherIcon}@2x.png"" alt="Weather icon">
+    </div>
+    </div>
+   
     
+ 
+  
 
     <div class="workout__details">
       <span class="workout__icon">${
