@@ -103,7 +103,6 @@ class App {
 
   async _getWeather(lat, lon) {
     try {
-      console.log(lat, lon);
       const url = `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=b6ba67cfc386c27233294b33908d06fc`;
       const result = await fetch(url);
       if (!result.ok)
@@ -118,7 +117,6 @@ class App {
     }
   }
   _loadMap(position) {
-    console.log(position);
     const { latitude, longitude } = position.coords;
     const coords = [latitude, longitude];
 
@@ -176,7 +174,7 @@ class App {
     const distance = Number(inputDistance.value);
     const duration = Number(inputDuration.value);
     const { lat, lng } = this.#mapEvent.latlng;
-    console.log(this.#mapEvent);
+
     let workout;
     let temp;
     let weatherIcon;
@@ -218,7 +216,6 @@ class App {
       this.#workouts.push(workout);
       this._renderWorkoutMarker(workout);
       this._renderWorkout(workout);
-      console.log(this.#workouts);
 
       // Set local storage
       this._setLocalStorage();
@@ -349,7 +346,7 @@ class App {
     const sortBtn = e.target;
     if (!sortBtn.classList.contains('sort')) return;
     this.#sort = !this.#sort;
-    console.log(this.#sort);
+
     document.querySelectorAll('.workout').forEach(workout => workout.remove());
     sort.textContent = this.#sort ? 'Sort by Latest' : 'Sort by Distance';
     const sortedWorkout = this.#sort
