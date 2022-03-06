@@ -1,5 +1,7 @@
 'use strict';
 
+import { Running, Cycling } from './classes.js';
+
 // prettier-ignore
 const form = document.querySelector('.form');
 const sort = document.querySelector('.sort');
@@ -9,60 +11,6 @@ const inputDistance = document.querySelector('.form__input--distance');
 const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
-
-class Workout {
-  date = new Date();
-  id = String(Date.now()).slice(-10);
-  clicks = 0;
-  constructor(coords, distance, duration, temp, weatherIcon) {
-    this.coords = coords; // [lat,long]
-    this.distance = distance; //in km
-    this.duration = duration; //in min
-    this.temp = temp;
-    this.weatherIcon = weatherIcon;
-  }
-  _setDescription() {
-    //prettier-ignore
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
-      months[this.date.getMonth()]
-    } ${this.date.getDate()}`;
-  }
-
-  click() {
-    this.clicks++;
-  }
-}
-
-class Running extends Workout {
-  type = 'running';
-  constructor(coords, distance, duration, cadence, temp, weatherIcon) {
-    super(coords, distance, duration, temp, weatherIcon);
-    this.cadence = cadence;
-    this.calcPace();
-    this._setDescription();
-  }
-
-  calcPace() {
-    this.pace = this.duration / this.distance;
-    return this.pace;
-  }
-}
-
-class Cycling extends Workout {
-  type = 'cycling';
-  constructor(coords, distance, duration, elevation, temp, weatherIcon) {
-    super(coords, distance, duration, temp, weatherIcon);
-    this.elevation = elevation;
-    this.calcSpeed();
-    this._setDescription();
-  }
-
-  calcSpeed() {
-    this.speed = this.distance / (this.duration / 60);
-    return this.speed;
-  }
-}
 
 class App {
   #map;
@@ -256,14 +204,10 @@ class App {
     <h2 class="workout__title">${workout.description}</h2>
     <div class="temp_container">
     <span>${workout.temp}°C</span>
-    <img id="wicon" src="http://openweathermap.org/img/wn/${workout.weatherIcon}@2x.png"" alt="Weather icon">
+    <img class="wicon" src="http://openweathermap.org/img/wn/${workout.weatherIcon}@2x.png"" alt="Weather icon">
     </div>
     </div>
    
-    
- 
-  
-
     <div class="workout__details">
       <span class="workout__icon">${
         workout.type == 'running' ? '🏃' : '🚴'
